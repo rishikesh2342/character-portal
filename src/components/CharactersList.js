@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import * as moment from 'moment';
 import CharacterCard from './CharacterCard';
 import Filter from './Filter';
-import { getCharacters } from '../api'; // Function to fetch characters from API
+import LeftArrowIcon from "./icons/left-arrow.svg"
+import RightArrowIcon from "./icons/right-arrow.svg"
 import "./style.css"
 const API_URL = 'https://rickandmortyapi.com/api/character';
 function CharactersList() {
+    const [apiUrl, setApiUrl] = useState(API_URL);
     const [characters, setCharacters] = useState([]);
     const [charactersInfo, setCharactersInfo] = useState({
         count: null,
@@ -17,23 +20,23 @@ function CharactersList() {
     const [filters, setFilters] = useState({ name: '', status: '', gender: '' });
 
     useEffect(() => {
-        fetchData();
+        fetchData(apiUrl);
     }, []);
 
-    const fetchData = async () => {
+    const fetchData = async (val) => {
         try {
-            const response = await fetch(API_URL);
+            const response = await fetch(val);
             const data = await response.json();
             const urlParams = new URLSearchParams(data.info.next);
-            console.log("check", urlParams, data.info.next, urlParams.get('page'), +urlParams.get('page') - 1)
             let tempInfo = {
                 count: data.info.count,
                 pages: data.info.pages,
                 next: data.info.next,
-                currentPage: data.info.next.split("=")[1] - 1,
-                start: 1,
-                end: 20,
+                currentPage: parseInt(data.info.next.split("=")[1] - 1),
+                start: parseInt(data.info.next.split("=")[1] - 1) === 1 ? 1 : ((parseInt(data.info.next.split("=")[1] - 1) - 1) * 20) + 1,
+                end: parseInt(data.info.next.split("=")[1] - 1) * 20,
             }
+            setApiUrl(data.info.next)
             setCharactersInfo(tempInfo);
             setCharacters(data.results);
             setFilteredCharacters(data.results);
@@ -56,28 +59,28 @@ function CharactersList() {
     const handleFilterChange = (filterName, value) => {
         setFilters(prevFilters => ({ ...prevFilters, [filterName]: value }));
     };
-
+    const nextpage = () => {
+        let pageSize = charactersInfo.currentPage + 1
+        let url = `https://rickandmortyapi.com/api/character/?page=${pageSize}`
+        setApiUrl(url)
+        fetchData(url)
+    }
+    const prevpage = () => {
+        let pageSize = charactersInfo.currentPage - 1
+        let url = `https://rickandmortyapi.com/api/character/?page=${pageSize}`
+        setApiUrl(url)
+        fetchData(url)
+    }
     return (
         <div>
             <div className="content">
-                <Filter onFilterChange={handleFilterChange} />
                 <section className="table-header grid">
-                    <div>
-                        <div className="select">
-                            <select>
-                                <option>Choose action</option>
-                                <option>Choose action</option>
-                                <option>Choose action</option>
-                                <option>Choose action</option>
-                            </select>
-                        </div>
-                    </div>
+                    <Filter onFilterChange={handleFilterChange} />
                 </section>
                 <div className="card">
                     <table>
                         <thead>
                             <tr>
-
                                 <th>Name</th>
                                 <th>Status</th>
                                 <th>Species</th>
@@ -92,7 +95,7 @@ function CharactersList() {
                                     <td>{item.status}</td>
                                     <td>{item.species}</td>
                                     <td>{item.gender}</td>
-                                    <td>{item.created}</td>
+                                    <td>{moment(item.created).format('MM/DD/YYYY')}</td>
                                 </tr>
                             })}
                         </tbody>
@@ -108,20 +111,14 @@ function CharactersList() {
                             of {charactersInfo?.pages}
                         </span>
                         <div className="button icon">
-                            <i className="fa-solid fa-angle-left"></i>
+                            <img src={LeftArrowIcon} onClick={prevpage} alt="left" />
                         </div>
                         <div className="button icon">
-                            <i className="fa-solid fa-angle-right"></i>
+                            <img src={RightArrowIcon} onClick={nextpage} alt="right" />
                         </div>
                     </div>
                 </section>
             </div>
-            {console.log("check", filteredCharacters)}
-            {/* <Filter onFilterChange={handleFilterChange} />
-            {console.log("check", filteredCharacters)}
-            {filteredCharacters.map(character => (
-                <CharacterCard key={character.id} character={character} />
-            ))} */}
         </div>
     );
 }
