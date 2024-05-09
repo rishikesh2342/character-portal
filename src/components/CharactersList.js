@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import * as moment from 'moment';
-import CharacterCard from './CharacterCard';
 import Filter from './Filter';
 import LeftArrowIcon from "./icons/left-arrow.svg"
 import RightArrowIcon from "./icons/right-arrow.svg"
 import "./style.css"
 const API_URL = 'https://rickandmortyapi.com/api/character';
 function CharactersList() {
+    const navigate = useNavigate();
     const [apiUrl, setApiUrl] = useState(API_URL);
     const [characters, setCharacters] = useState([]);
     const [charactersInfo, setCharactersInfo] = useState({
@@ -27,7 +28,6 @@ function CharactersList() {
         try {
             const response = await fetch(val);
             const data = await response.json();
-            const urlParams = new URLSearchParams(data.info.next);
             let tempInfo = {
                 count: data.info.count,
                 pages: data.info.pages,
@@ -71,6 +71,9 @@ function CharactersList() {
         setApiUrl(url)
         fetchData(url)
     }
+    const handleRedirect = (id) => {
+        navigate(`/character/${id}`);
+    }
     return (
         <div>
             <div className="content">
@@ -86,6 +89,7 @@ function CharactersList() {
                                 <th>Species</th>
                                 <th>Gender</th>
                                 <th>Created</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,6 +100,7 @@ function CharactersList() {
                                     <td>{item.species}</td>
                                     <td>{item.gender}</td>
                                     <td>{moment(item.created).format('MM/DD/YYYY')}</td>
+                                    <td><button className='view-btn' onClick={() => { handleRedirect(item.id) }}>View</button></td>
                                 </tr>
                             })}
                         </tbody>

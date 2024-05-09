@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-// import { getCharacterById } from '../api'; // Function to fetch character by ID from API
-
+import "./detail.css"
 function CharacterDetail() {
   const { id } = useParams();
-  const [character, setCharacter] = useState(null);
+  const [characterDetail, setCharacterDetail] = useState(null);
 
   useEffect(() => {
-    // async function fetchCharacter() {
-    //   const characterData = await getCharacterById(id);
-    //   setCharacter(characterData);
-    // }
-    // fetchCharacter();
+    fetchCharacterDetail();
   }, [id]);
-
+  const fetchCharacterDetail = async () => {
+    try {
+      const response = await fetch(`https://rickandmortyapi.com/api/character/${id}`);
+      const data = await response.json();
+      setCharacterDetail(data)
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   return (
     <div>
-      {character && (
-        <div>
-          <h2>{character.name}</h2>
-          <p>Status: {character.status}</p>
-          <p>Gender: {character.gender}</p>
-          <p>Species: {character.species}</p>
-          <img src={character.image} alt={character.name} />
+      <div className="responsive-container-block bigContainer">
+        <div className="responsive-container-block Container">
+          <img className="mainImg" src={characterDetail?.image} alt="ds" />
+          <div className="allText aboveText">
+            <p className="text-blk headingText">
+              {characterDetail?.name}
+            </p>
+            <div><span className='sub-title'>Gender</span> : <span className='sub-title-value'>{characterDetail?.gender}</span></div>
+            <div><span className='sub-title'>status</span> : <span className='sub-title-value'>{characterDetail?.status}</span></div>
+            <div><span className='sub-title'>species</span> : <span className='sub-title-value'>{characterDetail?.species}</span></div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
